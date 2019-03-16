@@ -4,7 +4,7 @@ Este repositório guarda o resumo dos items e anotações interessantes a respei
 
 ### Links
 
-[Terminal](https://dragonflycreative.com.br/terminal.html)
-[Vagrant](https://dragonflycreative.com.br/vagrant.html)
-[Ansible](https://dragonflycreative.com.br/ansible.html)
-[Puppet](https://dragonflycreative.com.br/puppet.html)
+[Terminal](https://dragonflycreative.com.br/infra-agil/terminal.html)
+[Vagrant](https://dragonflycreative.com.br/infra-agil/vagrant.html)
+[Ansible](https://dragonflycreative.com.br/infra-agil/ansible.html)
+[Puppet](https://dragonflycreative.com.br/infra-agil/puppet.html)
