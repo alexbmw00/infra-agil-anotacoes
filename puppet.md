@@ -77,6 +77,61 @@ systemctl start puppetserver
 systemctl enable puppetserver
 ```
 
+# puppet
+
+O commando utilizado tanto pelo agente como para os comandos locais é o `puppet`.
+As ações são tomadas a partir de "resources". Existem muitos resouces, por exemplo, para usuários, pacotes, serviços, arquivos e etc.
+
+## CLI
+
+Podemos por exemplo, listar todos os serviços:
+
+	puppet resource service
+
+Através disso, podemos escolher um serviço específico e pará-lo, sem se preocupar com a sintaxe do sistema em questão:
+
+	puppet resource service cron ensure=stopped
+
+Podemos cadastrar um usuário com apenas um simples comando do puppet - sem considerar a senha:
+
+```bash
+PASSWD=$(echo '4linux' | openssl passwd -1 -stdin)
+puppet resource user ken shell='/bin/bash' home='/home/ken' password="$PASSWD"
+```
+
+Podemos gerar exemplos de manifestos com os comandos para editarmos mais tarde:
+
+```bash
+puppet resource user ken shell='/bin/bash' home='/home/ken' > meu_manifesto.pp
+puppet package vim >> meu_manifesto.pp
+```
+
+## Manifests
+
+Os manifestos são um conjunto de instruções utilizados pelo puppet, são fáceis de ser versionados e transferidos:
+
+`meu_manifesto.pp`
+
+```puppet
+user { 'ken':
+  ensure   => 'present',
+  home     => '/home/ken',
+  password => '$1$56DSrUyJ$b1NsvSzju36aKFKX.Kzz4.',
+  shell    => '/bin/bash',
+}
+
+$pacotes = ['htop','curl','telnet','wget']
+package { $pacotes:
+  ensure   => 'present',
+}
+```
+
+**Obs:** veja que podemos modificar o "nome" do recurso para referenciar uma variável em forma de array, desta forma instalamos todos os pacotes de uma só vez.
+
+Para executar esse manifesto, basta executar:
+
+	puppet apply meu_manifesto.pp
+
 # Problemas
 
 Resolução dos problemas mais comuns em sala de aula:
