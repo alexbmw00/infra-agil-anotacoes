@@ -259,7 +259,8 @@ docker service ps cgi
 Podemos provisionar um compose-file dentro do cluster, por exemplo:
 
 **docker-compose.yml**
-```
+
+```yml
 version: '3.7'
 
 services:
@@ -269,26 +270,25 @@ services:
     - mysql
     image: hectorvido/php-app
     environment:
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_PASS: Abc123!
-      DB_USER: tre
-      DB_NAME: tre
+      DB_HOST: 'mysql'
+      DB_PORT: '3306'
+      DB_PASS: '4linux'
+      DB_USER: 'sistema'
+      DB_NAME: 'sistema'
     ports:
     - "8080:8080"
 
   mysql:
-    image: mysql
+    image: mysql:5.7
     environment:
-      MYSQL_ROOT_PASSWORD: Abc123!
-      MYSQL_USER: tre
-      MYSQL_PASSWORD: 4linux
-      MYSQL_DATABASE: tre
-    command: --default-authentication-plugin=mysql_native_password
+      MYSQL_ROOT_PASSWORD: 'Abc123!'
+      MYSQL_USER: 'sistema'
+      MYSQL_PASSWORD: '4linux'
+      MYSQL_DATABASE: 'sistema'
 ```
 
 Basta utilizar o comando:
 
 ```
-docker stack deploy --compose-file docker-compose.yml app
+docker stack deploy app --compose-file docker-compose.yml
 ```
