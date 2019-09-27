@@ -35,7 +35,7 @@ O comando **run** é a junção de dois outros comandos:
  
 ### Comandos de exemplo
 
-```
+```bash
 docker pull alpine
 docker run -d --name servidor -p 8080:80 nginx:alpine
 docker run -ti debian
@@ -47,7 +47,7 @@ docker stats
 Os contêineres quase sempre são efêmeros, e quando são removidos seus dados são descartados, a não ser que sejam persistidos em um volume. Este volume pode ser um diretório na própria máquina ou mesmo um serviço de NFS ou iSCSI. Também podemos "montar arquivos" diretamente dentro do container.
 Para montar volumes dentro do contêiner utilizamos a flag **-v** ou **--mount**.
 
-```
+```bash
 docker run -d --name apache -v /root/html:/usr/local/apache2/htdocs/ --publish 9090:80 httpd:end
 docker volume create portainer_data # opcional
 docker run -d -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer
@@ -55,7 +55,7 @@ docker run -d -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock -v porta
 
 Também é possível passar variáveis de ambiente para dentro do contêiner, para facilitar alteração de endereços, senhas, portas e etc ou mesmo utilizá-las para a inicialização de um contêiner:
 
-```
+```bash
 docker run -d -e MYSQL_ROOT_PASSWORD=4linux -e MYSQL_USER=hector -e MYSQL_PASSWORD=123 -e MYSQL_DATABASE=docker --name mysql mysql:5.7
 ```
 
@@ -81,6 +81,7 @@ O Dockerfile é o arquivo utilizado para criar imagens do docker. São muito sim
 Clone o repositório https://github.com/hector-vido/sti-lighttpd.git e entre na pasta e crie o arquivo:
 
 **Dockerfile**
+
 ```
 FROM alpine
 EXPOSE 80
@@ -150,7 +151,7 @@ htpasswd -Bbc auth/htpasswd admin 123
 
 Execute um **docker run** passando os parâmetros necessários para inicializar o contêiner com autenticação e certificado tls:
 
-```
+```bash
 docker run -d -p 5000:443 --restart=always --name registry \
 -v `pwd`/certs:/certs \
 -v `pwd`/cache:/var/lib/registry \
@@ -169,7 +170,7 @@ registry
 
 Por padrão o docker se recusa a comunicar-se com registries inseguros, mas é possível adicionar uma lista de locais permitidos. Nas versões mais novas este arquivo fica em **/etc/docker/daemon.json**:
 
-```
+```json
 {
   "insecure-registries" : ["localhost:5000"]
 }
@@ -177,18 +178,19 @@ Por padrão o docker se recusa a comunicar-se com registries inseguros, mas é p
 
 Para se logar o contêiner e poder subir imagens utilize:
 
-```
-docker login https://localhost:5000
+```bash
+docker login 'https://localhost:5000'
 docker tag alpine localhost:5000/alpine
 docker push localhost:5000/alpine
 ```
 
 Para consultar o registry, é preciso utilizar usuário e senha. Você pode fazê-lo pelo navegador ou utilizar o **curl**:
 
-```
+```bash
 curl -k -u admin:123 https://localhost:5000/v2/_catalog
 curl -k -u admin:123 https://127.0.0.1:5000/v2/alpine/tags/list
 ```
+
 # Swarm
 
 O **swarm** é o orquestrador padrão do Docker, já embutido no **docker-ce** muito simples de utilizar e muito poderoso.
@@ -208,14 +210,14 @@ Com ele é possível provisionar máquinas virtual muito leves para fazer testes
 
 Por ser um binário único e independente, basta baixá-lo e colocá-lo em um diretório padrão de executáveis:
 
-```
+```bash
 curl -L https://github.com/docker/machine/releases/download/v0.16.0/docker-machine-$(uname -s)-$(uname -m) > /tmp/docker-machine &&
 sudo install /tmp/docker-machine /usr/local/bin/docker-machine
 ```
 
 O comando para criar uma máquina virtual local utilizando-se do Virtualbox é muito simples, criaremos 3 para fazer parte de nosso cluster do Swarm:
 
-```
+```bash
 docker-machine create -d virtualbox default
 docker-machine create -d virtualbox worker1
 docker-machine create -d virtualbox worker2
@@ -223,21 +225,21 @@ docker-machine create -d virtualbox worker2
 
 Para iniciar o Swarm podemos entrar na máquina digitando apenas **docker-machine ssh <nome>** mas também podemos executar o comando diretamente:
 
-```
+```bash
 docker-machine ssh default docker swarm init --advertise-addr 192.168.99.100
 
 ```
 
 Este comando iniciará o cluster de Swarm e nos fornecerá um **token** para ser utilizado na adição de novos workers, por exemplo:
 
-```
-docker-machine ssh worker1 docker swarm join --token SWMTKN-1-5oap2z60b7awm9or2y54pq1wtj91ozytbeb4kz7zkhfefvfy8q-d01y9wthhtv9naed1vbcfbs0d 192.168.99.100:2377
-docker-machine ssh worker2 docker swarm join --token SWMTKN-1-5oap2z60b7awm9or2y54pq1wtj91ozytbeb4kz7zkhfefvfy8q-d01y9wthhtv9naed1vbcfbs0d 192.168.99.100:2377
+```vash
+docker-machine ssh worker1 docker swarm join --token 'SWMTKN-1-5oap2z60b7awm9or2y54pq1wtj91ozytbeb4kz7zkhfefvfy8q-d01y9wthhtv9naed1vbcfbs0d 192.168.99.100:2377'
+docker-machine ssh worker2 docker swarm join --token 'SWMTKN-1-5oap2z60b7awm9or2y54pq1wtj91ozytbeb4kz7zkhfefvfy8q-d01y9wthhtv9naed1vbcfbs0d 192.168.99.100:2377'
 ```
 
 Para podermos utilizar o **docker-cli** diretamente na máquina **manager** precisamos importar as variáveis necessárias na nossa sessão:
 
-```
+```bash
 eval $(docker-machine eval default)
 docker run hello-world
 ```
@@ -248,7 +250,7 @@ A partir de agora, todos os comandos executados partirão do princípio de que o
 
 É possível provisionar sua aplicação dentro do cluster, fornecendo o número de réplicas desejadas:
 
-```
+```bash
 docker service create --name cgi --replicas 3 -p 8080:8080 hectorvido/sh-cgi
 docker service ls
 docker service ps cgi
