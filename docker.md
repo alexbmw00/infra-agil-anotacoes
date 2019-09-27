@@ -1,6 +1,8 @@
 # Docker
 
-Docker é uma ferramenta utilizada para criar um tipo de virtualização conhecida como contêineres. Hoje, podemos dizer que o docker está separado em três ferramentas:
+Docker é uma ferramenta utilizada para criar aplicações que consigam funcionar isoladamente sem depender dos binários e bibliotecas do sistema operacional. Essas aplicações são transformadas no que chamamos de imagens. Através dessas imagens, podemos criar o que chamamos de contêineres.
+
+Hoje, podemos dizer que o docker está separado em três ferramentas:
 
  - docker-cli - executa os comandos desejados chamando a API REST
  - docker-engine - uma API REST que recebe os comandos e os passa para o containerd
@@ -10,7 +12,7 @@ Docker é uma ferramenta utilizada para criar um tipo de virtualização conheci
 
 #### Debian
 
-```
+```bash
 apt-get update
 apt-get -y install apt-transport-https ca-certificates curl gnupg2 software-properties-common
 curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
