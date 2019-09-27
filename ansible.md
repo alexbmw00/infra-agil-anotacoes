@@ -56,7 +56,9 @@ Esses fatos estão disponíveis dentro das playbooks como varíaveis.
 
 ## Playbooks
 
-As playbooks são um conjunto de instruções, geralmente mais complexas que os comandos ad-hocs, e podem fazer muitas coisas como comparações, loops e blocos:
+As playbooks são um conjunto de instruções, geralmente mais complexas que os comandos ad-hocs, e podem fazer muitas coisas como comparações, loops e blocos.
+
+Um exemplo de uma playbook que configura um servidor web com uma página html copiada da máquina que rodou a playbook:
 
 **deploy-site.yml**
 
@@ -68,10 +70,6 @@ As playbooks são um conjunto de instruções, geralmente mais complexas que os 
   - package:
       name: lighttpd
       state: present
-  - package:
-      name: htop
-      state: present
-    when: ansible_distribution|lower == 'debian'
   - service:
       name: lighttpd
       state: started
@@ -79,4 +77,78 @@ As playbooks são um conjunto de instruções, geralmente mais complexas que os 
   - copy:
       src: /home/dragonfly/index.html
       dest: /var/www/html/index.html
+```
+
+Uma playbook que padroniza o `/etc/hosts` das máquinas:
+
+**etc-hosts.yml**
+
+```yml
+- name: Garantindo /etc/hosts
+  become: yes
+  hosts: all
+  tasks:
+  - lineinfile:
+      path: /etc/hosts
+      line: '{{item}}'
+    loop:
+    - '192.168.33.10 devops.example.com'
+    - '192.168.33.20 docker.example.com'
+    - '192.168.33.30 automation.example.com'
+```
+
+Uma playbook que instala o Gitlab Omnibus:
+
+**gitlab-install.yml**
+
+```yml
+# Playbook de instalação do GitLab em Ansible
+- name: Instalação GitLab
+  hosts: devops
+  become: yes
+  tasks:
+  - package:
+      name: ['curl','openssh-server','ca-certificates']
+      state: present
+  - get_url:
+      url: https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh
+      dest: /tmp/
+      mode: 0755
+  - shell: /tmp/script.deb.sh
+  - package:
+      name: gitlab-ce
+      state: present
+```
+
+Um exemplo com blocos e condições da instalação do **Puppet** em máquinas de sistemas operacionais diferentes:
+
+**puppet-install.yml**
+
+```yml
+- name: Provisionando o Puppet
+  hosts: all
+  become: yes
+  tasks:
+  - name: CentOS
+    block:
+    - yum:
+        name: https://yum.puppet.com/puppet6-release-el-7.noarch.rpm
+        state: present
+    - package:
+        name: puppetserver
+        state: present
+    when: ansible_distribution|lower == 'centos'
+  - name: Debian
+    block:
+    - apt:
+        deb: https://apt.puppetlabs.com/puppet6-release-xenial.deb
+    - apt:
+        name: puppet
+        state: absent
+        update_cache: yes
+    - apt:
+        name: puppet-agent
+        state: present
+        update_cache: yes
+    when: ansible_distribution|lower == 'debian'
 ```
