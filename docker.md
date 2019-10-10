@@ -1,16 +1,29 @@
+
 # Docker
 
-Docker é uma ferramenta utilizada para criar aplicações que consigam funcionar isoladamente sem depender dos binários e bibliotecas do sistema operacional. Essas aplicações são transformadas no que chamamos de imagens. Através dessas imagens, podemos criar o que chamamos de contêineres.
+Docker é uma ferramenta utilizada para criar aplicações que consigam funcionar isoladamente sem depender dos binários e bibliotecas do sistema operacional. Essas aplicações são transformadas em imagens. Através dessas imagens, podemos criar o que chamamos de contêineres.
 
 Hoje, podemos dizer que o docker está separado em três ferramentas:
 
  - docker-cli - executa os comandos desejados chamando a API REST
  - docker-engine - uma API REST que recebe os comandos e os passa para o containerd
  - containerd - aquele que de fato cria os contêineres
+ 
+# Contêiner
 
-### Instalação
+Um contêiner é uma aplicação que roda isoladamente dentro de um sistema operacional. Isso significa que esta aplicação, no geral, não tem conhecimento sobre o que está fora, muito semelhante a um processo de **chroot** porém extremamente mais avançado.
+Quando falamos em isolamento, queremos dizer que a aplicação **realmente** está isolada, com seu próprio sistema de arquivos raíz - *root filesystem* - rede, hostname, processos - *os pids começam do 0* - e algumas coisas a mais.
+Como as dependências dessa aplicação estão todas dentro da imagem que foi gerada, basta que as máquinas onde esta aplicação irá rodar possúam o Docker ou qualquer *container runtime* compatível para que a aplicação funcione exatamente como funcionaria em outra máquina.
+Podemos chegar a conclusão de que um contêiner é uma aplicação auto-contida.
 
-#### Debian
+Apesar dos termos novos, assim são os contêineres do nosso mundo, grandes pacotes em formatos padrão carregados pelas mais diversas estruturas. O pacote não muda, mas a infraestrutura sim.
+Esses contêineres são carregados pela estrada por **caminhões**, colocados em um **navio** através de um **guindaste**, transportados pelo oceano até chegar ao outro lado, serem carregados novamente por outro guindaste e então posicionados novamente em **trem** até o destino final.
+
+# Instalação
+
+A instalação do Docker é muito simples nas mais variadas distribuições.
+
+## Debian
 
 ```bash
 apt-get update
@@ -21,6 +34,24 @@ apt-get update
 apt-get install -y docker-ce docker-ce-cli containerd.io
 usermod -G docker -a vagrant
 ```
+
+## CentOS
+
+```bash
+yum install -y yum-utils device-mapper-persistent-data lvm2
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+yum install docker-ce docker-ce-cli containerd.io
+```
+
+## OpenSUSE
+
+As versões do Docker utilizadas pelo OpenSUSE são quase sempre as mais recentes:
+
+```bash
+zypper install -y docker
+```
+
+# Utilização
 
 Após a instalação, você pode executar o comando de teste para verificar se tudo está funcionando corretamente:
 
@@ -33,7 +64,7 @@ O comando **run** é a junção de dois outros comandos:
  - docker create
  - docker run
  
-### Comandos de exemplo
+## Comandos de exemplo
 
 ```bash
 docker pull alpine
@@ -44,35 +75,43 @@ docker top ac10f32ed87e
 docker stats
 ```
 
+## Volumes
+
 Os contêineres quase sempre são efêmeros, e quando são removidos seus dados são descartados, a não ser que sejam persistidos em um volume. Este volume pode ser um diretório na própria máquina ou mesmo um serviço de NFS ou iSCSI. Também podemos "montar arquivos" diretamente dentro do container.
 Para montar volumes dentro do contêiner utilizamos a flag **-v** ou **--mount**.
 
 ```bash
-docker run -d --name apache -v /root/html:/usr/local/apache2/htdocs/ --publish 9090:80 httpd:end
+docker run -d --name 'apache' -v '/root/html:/usr/local/apache2/htdocs/' --publish 9090:80 httpd:alpine
 docker volume create portainer_data # opcional
-docker run -d -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer
+docker run -d -p 9000:9000 -v '/var/run/docker.sock:/var/run/docker.sock' -v 'portainer_data:/data portainer/portainer'
 ```
 
-Também é possível passar variáveis de ambiente para dentro do contêiner, para facilitar alteração de endereços, senhas, portas e etc ou mesmo utilizá-las para a inicialização de um contêiner:
+## Environment
+
+Também é possível passar variáveis de ambiente - environment - para dentro do contêiner, para facilitar alteração de endereços, senhas, portas e etc ou mesmo utilizá-las para a inicialização de um contêiner:
 
 ```bash
-docker run -d -e MYSQL_ROOT_PASSWORD=4linux -e MYSQL_USER=hector -e MYSQL_PASSWORD=123 -e MYSQL_DATABASE=docker --name mysql mysql:5.7
+docker run -d -e MYSQL_ROOT_PASSWORD='4linux' -e MYSQL_USER='hector' -e MYSQL_PASSWORD='123' -e MYSQL_DATABASE='docker' --name mysql mysql:5.7
 ```
+
+## Commit
 
 Podemos fazer alterações dentro de um contêiner e salvá-lo como uma image:
 
-```
-docker run -ti --name gambiarra alpine
-apk add vim curl telnet
+```bash
+docker run -ti --name 'nao-faca-isso' alpine
+apk add vim curl
 # CTRL + P + Q
-docker commit gambiarra gambiarra
+docker commit nao-faca-isso gambiarra
 ```
+
+## Save/Load
 
 Podemos salvar o contêiner como uma imagem, transferí-la para outro computador e carregá-la, sem precisar de acesso a internet ou a um registry local:
 
-```
-docker save gambiarra -o gambiarra.tar
-docker load -i gambiarra.tar
+```bash
+docker save gambiarra -o 'gambiarra.tar'
+docker load -i 'gambiarra.tar'
 ```
 
 # Dockerfile
@@ -121,7 +160,7 @@ Um registry é um repositório de imagens do Docker. Até então o único regist
 As vezes as pessoas precisam de repositórios privados e utilizam o registry do próprio Docker ou soluções mais robuscas como **Nexus**.
 Um exemplo bem simples é criar o registry com um container chamado **registry/v2**. Neste exemplo, vamos aproveitar e criar um registry com certificado TLS e autenticação básica.
 
-### Diretórios
+## Diretórios
 
 Crie uma pasta chamada **registry**, vamos trabalhar dentro dela. E nesta pasta crie outras três:
 
@@ -130,7 +169,7 @@ Crie uma pasta chamada **registry**, vamos trabalhar dentro dela. E nesta pasta 
    - cache
    - certs
 
-### Certificados
+## Certificados
 
 Utilize o comando **openssl** para criar um certificado auto-assinado:
 
@@ -138,7 +177,7 @@ Utilize o comando **openssl** para criar um certificado auto-assinado:
 openssl req -newkey rsa:4096 -nodes -sha256 -keyout certs/domain.key -x509 -days 365 -out certs/domain.crt
 ```
 
-### HTPasswd
+## HTPasswd
 
 Vamos colocar nossa autenticação em um arquivo de texto com a senha criptografada. Esse método é muito comum para liberar acesso a arquivos através do servidor web Apache:
 
@@ -147,7 +186,7 @@ apt-get install -y apache2-utils
 htpasswd -Bbc auth/htpasswd admin 123
 ```
 
-### Contêiner
+## Contêiner
 
 Execute um **docker run** passando os parâmetros necessários para inicializar o contêiner com autenticação e certificado tls:
 
@@ -166,7 +205,7 @@ docker run -d -p 5000:443 --restart=always --name registry \
 registry
 ```
 
-### Insecure Registry
+## Insecure Registry
 
 Por padrão o docker se recusa a comunicar-se com registries inseguros, mas é possível adicionar uma lista de locais permitidos. Nas versões mais novas este arquivo fica em **/etc/docker/daemon.json**:
 
@@ -246,7 +285,7 @@ docker run hello-world
 
 A partir de agora, todos os comandos executados partirão do princípio de que o **docker-cli** está direcionado para a máquina **default**.
 
-### Utilizando o swarm
+## Utilizando o swarm
 
 É possível provisionar sua aplicação dentro do cluster, fornecendo o número de réplicas desejadas:
 
@@ -256,7 +295,7 @@ docker service ls
 docker service ps cgi
 ```
 
-### Utilizando um compose-file
+## Utilizando um compose-file
 
 Podemos provisionar um compose-file dentro do cluster, por exemplo:
 
@@ -264,9 +303,7 @@ Podemos provisionar um compose-file dentro do cluster, por exemplo:
 
 ```yml
 version: '3.7'
-
 services:
-
   php:
     depends_on:
     - mysql
@@ -279,7 +316,6 @@ services:
       DB_NAME: 'sistema'
     ports:
     - "8080:8080"
-
   mysql:
     image: mysql:5.7
     environment:
@@ -291,6 +327,6 @@ services:
 
 Basta utilizar o comando:
 
-```
-docker stack deploy app --compose-file docker-compose.yml
+```bash
+docker stack deploy app --compose-file 'docker-compose.yml'
 ```
