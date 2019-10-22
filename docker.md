@@ -330,3 +330,37 @@ Basta utilizar o comando:
 ```bash
 docker stack deploy app --compose-file 'docker-compose.yml'
 ```
+## NFS
+
+```yaml
+
+version: '3.0'
+
+services:
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: '!Abc123'
+      MYSQL_USER: 'trf'
+      MYSQL_PASSWORD: '4linux'
+      MYSQL_DATABASE: 'trf'
+    volumes:
+    - nfs_mysql_data:/var/lib/mysql
+  app:
+    image: hectorvido/trf
+    environment:
+      DB_HOST: 'mysql'
+      DB_PORT: 3306
+      DB_USER: 'trf'
+      DB_PASS: '4linux'
+      DB_NAME: 'trf'
+    ports:
+    - '65535:8080'
+
+volumes:
+  nfs_mysql_data:
+    driver_opts:
+      type: nfs
+      o: addr=192.168.33.10,nolock,soft,rw
+      device: ':/srv/nfs/mysql_data'
+```
